@@ -13,6 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+ 
 definition(
     name: "Weather Station 2.0",
     namespace: "",
@@ -30,7 +31,6 @@ preferences {
 metadata {
     definition (name: "Weather Station", author: "jnovack@gmail.com") {
       capability "Polling"
-      capability "Relative Humidity Measurement"
       capability "Water Sensor"
       capability "Temperature Measurement"
     }
@@ -41,7 +41,7 @@ metadata {
 
 tiles {
 
-valueTile("temperature", "device.temperature", width: 1, height: 1, canChangeIcon: true) {
+valueTile("totalrain", "device.temperature", width: 1, height: 1, canChangeIcon: true) {
             state("temperature", label: '${currentValue}°F', unit:"F", backgroundColors: [
                     [value: 31, color: "#153591"],
                     [value: 44, color: "#1e9cbb"],
@@ -73,20 +73,7 @@ def poll() {
 def isRainDelay() { 
     def rainGauge = wasWetYesterday()+isWet()+isStormy()
     log.info ("Rain gauge reads $rainGauge in")
-    if (rainGauge > (wetThreshold?.toFloat() ?: 0.5)) {
-        log.trace "Watering is rain delayed"
-        sendPush("Skipping watering today due to precipitation.")
-        for(s in switches) {
-            if("rainDelayed" in s.supportedCommands.collect { it.name }) {
-                s.rainDelayed()
-            }
-        }
-        if("rainDelayed" in schedulerVirtualDevice?.supportedCommands.collect { it.name }) {
-            schedulerVirtualDevice.rainDelayed()
-        }
-        return true
-    }
-    return false
+	return israindelay
 }
 
 def wasWetYesterday() {
@@ -138,5 +125,5 @@ def poll() {
         
     // Set the tiles
     log.debug( "Current Temperature: ${weather.current_observation.temp_f}ºF" )
-    sendEvent( name: 'temperature', value: isRainDelay )
+    sendEvent( name: 'totalrain', value: isRainDelay )
  } 
